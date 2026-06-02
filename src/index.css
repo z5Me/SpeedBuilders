@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+@theme {
+  --color-minecraft-blue: #101222;
+  --color-minecraft-purple: #25123e;
+  --color-minecraft-green: #3fcf8e;
+  --color-minecraft-yellow: #f8e71c;
+  --color-minecraft-red: #ff4757;
+  --color-minecraft-gold: #ffa502;
+
+  --font-minecraft: "Press Start 2P", monospace;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--color-minecraft-blue);
+    color: #ffffff;
+    overflow-x: hidden;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-minecraft-blue);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-minecraft-purple);
+    border-radius: 5px;
+    border: 2px solid var(--color-minecraft-blue);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-minecraft-gold);
+  }
+}
