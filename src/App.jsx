@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles, Zap, Trophy, Users, Clock, Eye, Brain, Hammer, Shield,
   ChevronDown, Copy, Check, Video, MessageSquare, ArrowRight, Play, ExternalLink,
-  Timer, Target, Activity, Loader2, HardHat, Cpu
+  Timer, Activity, Loader2, Cpu
 } from "lucide-react";
+import { ScrollSmoother, ScrollTrigger } from "./lib/gsap";
 
 const creeperPattern = [
   0, 0, 0, 0, 0, 0, 0, 0,
@@ -35,8 +36,36 @@ export default function App() {
   const [countdownVal, setCountdownVal] = useState(3);
   const [progress, setProgress] = useState(0);
   const [builtBlocks, setBuiltBlocks] = useState(0);
-  const [simStarted, setSimStarted] = useState(false);
   const totalBlocks = 64;
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (prefersReducedMotion) {
+      return undefined;
+    }
+
+    ScrollSmoother.get()?.kill();
+
+    const smoother = ScrollSmoother.create({
+      wrapper: "#smooth-wrapper",
+      content: "#smooth-content",
+      smooth: 0.75,
+      smoothTouch: 0,
+      effects: false,
+      normalizeScroll: false,
+      ignoreMobileResize: true,
+    });
+
+    const refreshScroll = () => ScrollTrigger.refresh();
+    window.addEventListener("load", refreshScroll);
+    ScrollTrigger.refresh();
+
+    return () => {
+      window.removeEventListener("load", refreshScroll);
+      smoother.kill();
+    };
+  }, []);
 
   const handleCopyIP = useCallback(() => {
     navigator.clipboard.writeText("heomc.net");
@@ -49,6 +78,23 @@ export default function App() {
     setBuiltBlocks(0);
     setProgress(0);
     setCountdownVal(3);
+  }, []);
+
+  const scrollToTarget = useCallback((target, position = "top top") => {
+    const smoother = ScrollSmoother.get();
+
+    if (smoother) {
+      smoother.scrollTo(target, true, position);
+      return;
+    }
+
+    if (typeof target === "number") {
+      window.scrollTo({ top: target, behavior: "smooth" });
+      return;
+    }
+
+    const element = typeof target === "string" ? document.querySelector(target) : target;
+    element?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, []);
 
   const startSim = useCallback(() => {
@@ -85,12 +131,12 @@ export default function App() {
   const handlePlayAgain = useCallback(() => {
     resetSim();
     setTimeout(() => {
-      document.getElementById("simulator")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      scrollToTarget("#simulator", "center center");
       setTimeout(() => {
         startSim();
       }, 800);
     }, 100);
-  }, [resetSim, startSim]);
+  }, [resetSim, scrollToTarget, startSim]);
 
   const steps = [
     {
@@ -128,17 +174,12 @@ export default function App() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#0a0b10] text-slate-100 font-sans overflow-x-hidden selection:bg-purple-500 selection:text-white">
+    <>
       {/* Premium Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-5%] left-[-5%] w-[40%] h-[40%] rounded-full bg-gradient-to-br from-purple-900/20 via-violet-800/15 to-transparent blur-[140px]" />
-        <div className="absolute bottom-[10%] right-[-5%] w-[50%] h-[50%] rounded-full bg-gradient-to-tr from-indigo-900/20 to-blue-900/10 blur-[160px]" />
-        <div className="absolute top-[50%] left-[40%] w-[30%] h-[30%] rounded-full bg-gradient-to-r from-emerald-900/10 to-teal-900/5 blur-[120px]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px]" />
-      </div>
+      <div className="ambient-background fixed inset-0 pointer-events-none z-0" />
 
       {/* ===== HEADER ===== */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0b10]/80 backdrop-blur-xl border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0b10]/95 border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
@@ -160,6 +201,11 @@ export default function App() {
         </div>
       </header>
 
+      <div
+        id="smooth-wrapper"
+        className="bg-[#0a0b10] text-slate-100 font-sans selection:bg-purple-500 selection:text-white"
+      >
+        <div id="smooth-content" className="relative min-h-screen overflow-x-hidden">
       {/* ===== 1. HERO SECTION ===== */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-6 z-10 pt-20 text-center">
         <motion.div
@@ -190,7 +236,7 @@ export default function App() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
-              onClick={() => document.getElementById("simulator")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => scrollToTarget("#features", "center center")}
               className="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-2xl font-bold text-lg shadow-xl shadow-purple-500/20 hover:shadow-purple-500/30 transition-all flex items-center gap-3 active:scale-95"
             >
               <Play size={20} className="fill-white" />
@@ -213,7 +259,7 @@ export default function App() {
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer"
-          onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}
+          onClick={() => scrollToTarget(window.innerHeight)}
         >
           <span className="text-[10px] uppercase tracking-[0.2em] text-slate-600">Khám phá</span>
           <ChevronDown size={18} className="text-slate-600 animate-bounce" />
@@ -273,12 +319,8 @@ export default function App() {
                 {/* Decorative block grid - Creeper */}
                 <div className="grid grid-cols-8 gap-1 w-full max-w-[200px]">
                   {creeperPattern.map((isBlack, i) => (
-                    <motion.div
+                    <div
                       key={i}
-                      initial={{ opacity: 0, scale: 0 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.01 }}
                       className={`aspect-square rounded-[3px] border shadow-[inset_0_0_8px_rgba(0,0,0,0.2)] ${getBlockColor(isBlack, i)}`}
                     />
                   ))}
@@ -377,7 +419,7 @@ export default function App() {
       </section>
 
       {/* ===== 4. CORE FEATURES ===== */}
-      <section className="relative py-28 px-6 z-10 bg-[#0c0d15]/50 border-t border-white/5">
+      <section id="features" className="relative py-28 px-6 z-10 bg-[#0c0d15]/50 border-t border-white/5">
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -444,7 +486,7 @@ export default function App() {
       </section>
 
       {/* ===== 5. BUILD SIMULATOR ===== */}
-      <section id="simulator" className="relative py-28 px-6 z-10">
+      <section id="simulator" className="hidden" aria-hidden="true">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -469,7 +511,6 @@ export default function App() {
             whileInView={{ opacity: 1, y: 0 }}
             onViewportEnter={() => {
               if (simPhase === "idle") {
-                setSimStarted(true);
                 startSim();
               }
             }}
@@ -1147,6 +1188,8 @@ export default function App() {
           </p>
         </div>
       </footer>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }

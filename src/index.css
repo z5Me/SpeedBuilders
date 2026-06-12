@@ -16,7 +16,7 @@
 
 @layer base {
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
 
   body {
@@ -27,6 +27,38 @@
     background-color: var(--color-minecraft-blue);
     color: #ffffff;
     overflow-x: hidden;
+  }
+
+  #smooth-wrapper,
+  #smooth-content {
+    min-height: 100%;
+  }
+
+  #smooth-content {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+
+  .ambient-background {
+    background:
+      radial-gradient(circle at 0% 0%, rgb(88 28 135 / 0.18), transparent 32%),
+      radial-gradient(circle at 100% 70%, rgb(49 46 129 / 0.18), transparent 38%),
+      radial-gradient(circle at 48% 52%, rgb(6 78 59 / 0.12), transparent 28%),
+      linear-gradient(to right, rgb(255 255 255 / 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.02) 1px, transparent 1px),
+      #0a0b10;
+    background-size: auto, auto, auto, 24px 24px, 24px 24px, auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    #smooth-content {
+      will-change: auto;
+      transform: none;
+    }
   }
 
   /* Custom Scrollbar */
